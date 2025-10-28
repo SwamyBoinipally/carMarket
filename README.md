@@ -68,7 +68,4 @@ pnpm run dev
 ```shell
 pnpm run build
 ```
-=======
-# carMarket
-CarMarket is a React-based second-hand car marketplace for the Indian market. Features include Google authentication, admin dashboard for inventory management, responsive design with mobile navigation, and WhatsApp integration. Built with TypeScript, Vite, shadcn/ui, Tailwind CSS, and Firebase services.
->>>>>>> d08ae59f3363d15c13435e2fb9d57cf1142ef00e
+
