@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, MapPin, Calendar, Gauge, Fuel, Settings, Trash2, Phone, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Gauge, Fuel, Settings, Trash2, Phone, Share2, PencilIcon } from 'lucide-react';
+import { getShareableUrl } from '../lib/utils';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -102,13 +103,13 @@ export default function CarDetail() {
         await navigator.share({
           title: car?.title,
           text: `Check out this car: ${car?.title}`,
-          url: window.location.href,
+          url: getShareableUrl(window.location.pathname),
         });
       } catch (error) {
         console.error('Error sharing:', error);
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(getShareableUrl(window.location.pathname));
       toast.success('Link copied to clipboard!');
     }
   };
@@ -260,6 +261,12 @@ export default function CarDetail() {
 
                 {isAdmin && (
                   <div className="mt-4 space-y-2">
+                    <Link to={`/dashboard/edit/${car?.id}`}>
+                      <Button className="w-full" variant="outline">
+                        <PencilIcon className="w-4 h-4 mr-2" />
+                        Edit Listing
+                      </Button>
+                    </Link>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" className="w-full" disabled={deleting}>

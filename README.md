@@ -69,3 +69,25 @@ pnpm run dev
 pnpm run build
 ```
 
+## Deployment on Vercel
+
+1. Create a Vercel account at [vercel.com](https://vercel.com) if you haven't already
+2. Install Vercel CLI globally:
+   ```shell
+   npm i -g vercel
+   ```
+3. Login to Vercel:
+   ```shell
+   vercel login
+   ```
+4. Deploy to Vercel:
+   ```shell
+   vercel
+   ```
+5. To deploy production build from main branch:
+   ```shell
+   vercel --prod
+   ```
+
+The deployment will automatically detect it's a Vite project and set up the build settings. Your site will be live at a URL like `https://your-project-name.vercel.app`.
+

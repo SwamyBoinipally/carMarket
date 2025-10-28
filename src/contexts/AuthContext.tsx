@@ -30,28 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      console.log('Starting Google Sign-In...');
-      console.log('Auth domain:', auth.app.options.authDomain);
-      console.log('API Key exists:', !!auth.app.options.apiKey);
-      
       const result = await signInWithPopup(auth, googleProvider);
-      
-      console.log('Sign-in successful:', {
-        email: result.user.email,
-        displayName: result.user.displayName,
-        uid: result.user.uid
-      });
       
       if (result.user) {
         toast.success(`Welcome, ${result.user.displayName || 'User'}!`);
       }
     } catch (error) {
       const authError = error as AuthError;
-      console.error('=== Google Sign-In Error ===');
-      console.error('Error code:', authError.code);
-      console.error('Error message:', authError.message);
-      console.error('Full error:', authError);
-      console.error('========================');
       
       // Handle specific error cases
       if (authError.code === 'auth/popup-closed-by-user') {
@@ -63,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       } else if (authError.code === 'auth/unauthorized-domain') {
         toast.error('This domain is not authorized. Please add it to Firebase Console.');
-        console.error('Add this domain to Firebase Console > Authentication > Settings > Authorized domains');
+        // Domain needs to be added to Firebase Console
       } else if (authError.code === 'auth/operation-not-allowed') {
         toast.error('Google Sign-In is not enabled. Please enable it in Firebase Console.');
       } else if (authError.code === 'auth/invalid-api-key') {
@@ -81,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signOut(auth);
       toast.success('Signed out successfully');
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Error handled with toast
       toast.error('Failed to sign out');
       throw error;
     }

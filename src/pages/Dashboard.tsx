@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { CarFormData } from '@/types/car';
@@ -17,6 +17,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Dashboard() {
   const { user, isAdmin, loading } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [isEditing] = useState(!!id);
   const [formData, setFormData] = useState<CarFormData>({
     title: '',
     description: '',
@@ -36,6 +39,40 @@ export default function Dashboard() {
       imagePreviews.forEach(url => URL.revokeObjectURL(url));
     };
   }, [imagePreviews]);
+
+  useEffect(() => {
+    if (isEditing && id) {
+      const fetchCar = async () => {
+        try {
+          const carDoc = await getDoc(doc(db, 'cars', id));
+          if (carDoc.exists()) {
+            const carData = carDoc.data();
+            setFormData({
+              title: carData.title,
+              description: carData.description,
+              price: carData.price,
+              location: carData.location,
+              year: carData.year,
+              mileage: carData.mileage,
+              fuelType: carData.fuelType,
+              transmission: carData.transmission,
+            });
+            if (carData.imageUrls) {
+              setImagePreviews(carData.imageUrls);
+            }
+          } else {
+            toast.error('Car not found');
+            navigate('/dashboard');
+          }
+        } catch (error) {
+          console.error('Error fetching car:', error);
+          toast.error('Failed to load car details');
+          navigate('/dashboard');
+        }
+      };
+      fetchCar();
+    }
+  }, [id, isEditing, navigate]);
 
   if (loading) {
     return (
@@ -92,14 +129,25 @@ export default function Dashboard() {
         imageUrls.push(url);
       }
 
-      // Create car document
-      await addDoc(collection(db, 'cars'), {
-        ...formData,
-        imageUrls,
-        createdAt: serverTimestamp(),
-      });
-
-      toast.success('Car listing created successfully!');
+      if (isEditing && id) {
+        // Update car document
+        await updateDoc(doc(db, 'cars', id), {
+          ...formData,
+          ...(imageUrls.length > 0 && { imageUrls: [...imagePreviews.filter(url => url.startsWith('https')), ...imageUrls] }),
+          updatedAt: serverTimestamp(),
+        });
+        toast.success('Car listing updated successfully!');
+        navigate(`/car/${id}`);
+      } else {
+        // Create car document
+        const docRef = await addDoc(collection(db, 'cars'), {
+          ...formData,
+          imageUrls,
+          createdAt: serverTimestamp(),
+        });
+        toast.success('Car listing created successfully!');
+        navigate(`/car/${docRef.id}`);
+      }
 
       // Reset form
       setFormData({
@@ -168,7 +216,7 @@ export default function Dashboard() {
         {isAdmin ? (
           <Card>
             <CardHeader>
-              <CardTitle>Add New Car Listing</CardTitle>
+              <CardTitle>{isEditing ? 'Edit Car Listing' : 'Add New Car Listing'}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -331,7 +379,7 @@ export default function Dashboard() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={uploading}>
-                  {uploading ? 'Uploading...' : 'Create Listing'}
+                  {uploading ? 'Uploading...' : isEditing ? 'Update Listing' : 'Create Listing'}
                 </Button>
               </form>
             </CardContent>

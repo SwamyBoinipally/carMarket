@@ -19,6 +19,7 @@ export default function Home() {
   const [yearFilter, setYearFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { user, signInWithGoogle, logout } = useAuth();
 
   useEffect(() => {
@@ -28,6 +29,11 @@ export default function Home() {
   useEffect(() => {
     filterAndSortCars();
   }, [cars, searchTerm, priceFilter, yearFilter, sortBy]);
+
+  // Close sheet when auth state changes
+  useEffect(() => {
+    setSheetOpen(false);
+  }, [user]);
 
   const fetchCars = async () => {
     try {
@@ -103,7 +109,7 @@ export default function Home() {
   };
 
   const handleWhatsAppClick = () => {
-    window.open('https://wa.me/919949989823', '_blank');
+    window.open('https://wa.me/919949989823', '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -145,23 +151,23 @@ export default function Home() {
             </div>
 
             {/* Mobile Navigation */}
-            <Sheet>
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild className="md:hidden">
                 <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px]">
+              <SheetContent side="right" className="w-[300px]" onCloseAutoFocus={(e) => e.preventDefault()}>
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 mt-6">
-                  <Button onClick={handleWhatsAppClick} variant="outline" className="w-full justify-start">
+                  <Button onClick={() => { handleWhatsAppClick(); setSheetOpen(false); }} variant="outline" className="w-full justify-start">
                     <Phone className="w-4 h-4 mr-2" />
                     WhatsApp
                   </Button>
                   {user && (
-                    <Link to="/dashboard" className="w-full">
+                    <Link to="/dashboard" className="w-full" onClick={() => setSheetOpen(false)}>
                       <Button variant="outline" className="w-full justify-start">
                         <LayoutDashboard className="w-4 h-4 mr-2" />
                         Dashboard
@@ -169,12 +175,25 @@ export default function Home() {
                     </Link>
                   )}
                   {user ? (
-                    <Button onClick={logout} variant="outline" className="w-full justify-start">
+                    <Button 
+                      onClick={async () => {
+                        setSheetOpen(false);
+                        await logout();
+                      }} 
+                      variant="outline" 
+                      className="w-full justify-start"
+                    >
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
                     </Button>
                   ) : (
-                    <Button onClick={signInWithGoogle} className="w-full justify-start">
+                    <Button 
+                      onClick={async () => {
+                        setSheetOpen(false);
+                        await signInWithGoogle();
+                      }} 
+                      className="w-full justify-start"
+                    >
                       <LogIn className="w-4 h-4 mr-2" />
                       Sign In
                     </Button>

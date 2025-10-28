@@ -20,6 +20,7 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/car/:id" element={<CarDetail />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/edit/:id" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
