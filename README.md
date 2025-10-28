@@ -1,22 +1,24 @@
-# Shadcn-UI Template Usage Instructions
+# CarMarket - Second-Hand Car Marketplace
 
-## technology stack
+CarMarket is a React-based second-hand car marketplace for the Indian market. Features include Google authentication, admin dashboard for inventory management, responsive design with mobile navigation, and WhatsApp integration. Built with TypeScript, Vite, shadcn/ui, Tailwind CSS, and Firebase services.
 
-This project is built with:
+## Technology Stack
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Frontend:** React, TypeScript, Vite
+- **UI Components:** shadcn/ui
+- **Styling:** Tailwind CSS
+- **Backend Services:** Firebase
+- **Authentication:** Google Sign-In
+- **Storage:** Firebase Storage
 
-All shadcn/ui components have been downloaded under `@/components/ui`.
+## Features
 
-## File Structure
-
-- `index.html` - HTML entry point
-- `vite.config.ts` - Vite configuration file
-- `tailwind.config.js` - Tailwind CSS configuration file
+- Public car listings with search/filter
+- Admin dashboard for inventory management
+- Mobile-responsive design
+- WhatsApp integration
+- Multi-image upload support
+- Role-based access control
 - `package.json` - NPM dependencies and scripts
 - `src/app.tsx` - Root component of the project
 - `src/main.tsx` - Project entry point
@@ -66,3 +68,7 @@ pnpm run dev
 ```shell
 pnpm run build
 ```
+=======
+# carMarket
+CarMarket is a React-based second-hand car marketplace for the Indian market. Features include Google authentication, admin dashboard for inventory management, responsive design with mobile navigation, and WhatsApp integration. Built with TypeScript, Vite, shadcn/ui, Tailwind CSS, and Firebase services.
+>>>>>>> d08ae59f3363d15c13435e2fb9d57cf1142ef00e
