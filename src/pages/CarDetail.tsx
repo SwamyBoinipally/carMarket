@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, MapPin, Calendar, Gauge, Fuel, Settings, Trash2, Phone, Share2, PencilIcon } from 'lucide-react';
 import { getShareableUrl } from '../lib/utils';
 import { toast } from 'sonner';
+import Footer from '@/components/Footer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -136,7 +137,7 @@ export default function CarDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -295,6 +296,7 @@ export default function CarDetail() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

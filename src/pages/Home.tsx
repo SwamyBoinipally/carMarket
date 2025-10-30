@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, LogIn, LogOut, LayoutDashboard, Phone, Menu } from 'lucide-react';
+import { Search, LogIn, LogOut, LayoutDashboard, Phone, Menu, Building2 } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -113,7 +114,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -125,6 +126,12 @@ export default function Home() {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex gap-2">
+              <Link to="/about">
+                <Button variant="outline" size="sm">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  About
+                </Button>
+              </Link>
               <Button onClick={handleWhatsAppClick} variant="outline" size="sm" className="!bg-transparent !hover:bg-transparent border-green-600 text-green-600 hover:bg-green-50">
                 <Phone className="w-4 h-4 mr-2" />
                 WhatsApp
@@ -162,6 +169,12 @@ export default function Home() {
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 mt-6">
+                  <Link to="/about" className="w-full" onClick={() => setSheetOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Building2 className="w-4 h-4 mr-2" />
+                      About
+                    </Button>
+                  </Link>
                   <Button onClick={() => { handleWhatsAppClick(); setSheetOpen(false); }} variant="outline" className="w-full justify-start">
                     <Phone className="w-4 h-4 mr-2" />
                     WhatsApp
@@ -327,6 +340,7 @@ export default function Home() {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

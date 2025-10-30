@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Upload, X, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Footer from '@/components/Footer';
 
 export default function Dashboard() {
   const { user, isAdmin, loading } = useAuth();
@@ -192,21 +194,31 @@ export default function Dashboard() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              {user.photoURL && (
-                <img
-                  src={user.photoURL}
-                  alt={user.displayName || 'User'}
-                  className="w-12 h-12 rounded-full"
-                />
-              )}
+              <div className="relative">
+                <Avatar className="h-12 w-12 border-2 border-gray-200">
+                {user.photoURL ? (
+                  <AvatarImage 
+                    src={user.photoURL} 
+                    alt={user.displayName || 'User'} 
+                    className="object-cover"
+                    referrerPolicy="no-referrer"  // Add this to fix Google Photos cross-origin issues
+                  />
+                ) : null}
+                <AvatarFallback className="bg-blue-600 text-white text-lg">
+                  {(user.displayName || 'User').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              </div>
               <div>
                 <p className="font-semibold">{user.displayName}</p>
                 <p className="text-sm text-gray-600">{user.email}</p>
-                {isAdmin && (
-                  <span className="inline-block mt-1 px-2 py-1 text-xs font-semibold text-white bg-blue-600 rounded">
-                    Admin
-                  </span>
-                )}
+                <span className={`inline-block mt-1 px-2 py-1 text-xs font-semibold rounded ${
+                  isAdmin 
+                    ? "text-white bg-blue-600" 
+                    : "text-gray-700 bg-gray-200"
+                }`}>
+                  {isAdmin ? "Admin" : "Non-admin"}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -394,6 +406,7 @@ export default function Dashboard() {
           </Alert>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

@@ -33,6 +33,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await signInWithPopup(auth, googleProvider);
       
       if (result.user) {
+        // Log user data to verify photoURL
+        console.log('User data:', {
+          displayName: result.user.displayName,
+          email: result.user.email,
+          photoURL: result.user.photoURL
+        });
+        
+        // Force refresh the user's token to ensure we have latest data
+        await result.user.reload();
+        setUser(result.user);
         toast.success(`Welcome, ${result.user.displayName || 'User'}!`);
       }
     } catch (error) {

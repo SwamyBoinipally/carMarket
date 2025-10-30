@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import CarDetail from './pages/CarDetail';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
+import About from './pages/About';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/car/:id" element={<CarDetail />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/edit/:id" element={<Dashboard />} />
