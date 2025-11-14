@@ -31,4 +31,7 @@ googleProvider.setCustomParameters({
 // Admin email list - Add admin emails here
 export const ADMIN_EMAILS = [
   'brandium.digital@gmail.com',
+  'Koppulachandramouli@gmail.com',
+  'swamy.boinipally@gmail.com'
+  
 ];
