@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
-import { ref, deleteObject } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { deleteImagesByUrls } from '@/lib/imageUpload';
 import { Car } from '@/types/car';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, MapPin, Calendar, Gauge, Fuel, Settings, Trash2, Phone, Share2, PencilIcon } from 'lucide-react';
+import { MapPin, Calendar, Gauge, Fuel, Settings, Trash2, Phone, Share2, PencilIcon, ChevronLeft, ChevronRight, ArrowLeft, Zap, Users, FileText, Palette } from 'lucide-react';
 import { getShareableUrl } from '../lib/utils';
 import { toast } from 'sonner';
+import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import {
   AlertDialog,
@@ -23,14 +24,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
+import type { CarouselApi } from '@/components/ui/carousel';
 
 export default function CarDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
   const { isAdmin } = useAuth();
 
   useEffect(() => {
@@ -38,6 +43,19 @@ export default function CarDetail() {
       fetchCar(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on('select', () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
 
   const fetchCar = async (carId: string) => {
     try {
@@ -50,7 +68,6 @@ export default function CarDetail() {
         } as Car);
       }
     } catch (error) {
-      console.error('Error fetching car:', error);
       toast.error('Failed to load car details');
     } finally {
       setLoading(false);
@@ -62,25 +79,18 @@ export default function CarDetail() {
 
     setDeleting(true);
     try {
-      // Delete images from storage
+      // Delete all associated images from storage
       if (car.imageUrls && car.imageUrls.length > 0) {
-        for (const url of car.imageUrls) {
-          try {
-            const imageRef = ref(storage, url);
-            await deleteObject(imageRef);
-          } catch (error) {
-            console.error('Error deleting image:', error);
-          }
-        }
+        await deleteImagesByUrls(car.imageUrls);
       }
 
-      // Delete car document
+      // Delete car document from Firestore
       await deleteDoc(doc(db, 'cars', id));
-      toast.success('Car deleted successfully');
+
+      toast.success('Car listing deleted successfully');
       navigate('/');
     } catch (error) {
-      console.error('Error deleting car:', error);
-      toast.error('Failed to delete car');
+      toast.error('Failed to delete car listing');
     } finally {
       setDeleting(false);
     }
@@ -107,7 +117,7 @@ export default function CarDetail() {
           url: getShareableUrl(window.location.pathname),
         });
       } catch (error) {
-        console.error('Error sharing:', error);
+        // Handle share cancellation silently
       }
     } else {
       navigator.clipboard.writeText(getShareableUrl(window.location.pathname));
@@ -138,60 +148,72 @@ export default function CarDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Listings
-              </Button>
-            </Link>
-            <Button onClick={handleShare} variant="outline" size="sm">
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3">
+        <Link to="/">
+          <Button variant="ghost" size="sm" className="h-9 px-3">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Listing
+          </Button>
+        </Link>
+        <Button onClick={handleShare} variant="outline" size="sm" className="h-9 px-3">
+          <Share2 className="w-4 h-4 mr-2" />
+          Share
+        </Button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Images Section */}
           <div className="lg:col-span-2">
             <Card>
               <CardContent className="p-0">
-                <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
-                  {car.imageUrls && car.imageUrls.length > 0 ? (
-                    <img
-                      src={car.imageUrls[selectedImage]}
-                      alt={car.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No Image Available
-                    </div>
-                  )}
-                </div>
-                {car.imageUrls && car.imageUrls.length > 1 && (
-                  <div className="grid grid-cols-4 gap-2 p-4">
-                    {car.imageUrls.map((url, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`aspect-video rounded-lg overflow-hidden border-2 ${
-                          selectedImage === index ? 'border-blue-600' : 'border-transparent'
-                        }`}
-                      >
-                        <img
-                          src={url}
-                          alt={`${car.title} ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
+                {car.imageUrls && car.imageUrls.length > 0 ? (
+                  <div className="space-y-4">
+                    <Carousel setApi={setApi} className="w-full">
+                      <CarouselContent>
+                        {car.imageUrls.map((url, index) => (
+                          <CarouselItem key={index}>
+                            <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
+                              <img src={url} alt={`${car.title} ${index + 1}`} className="w-full h-full object-cover" />
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      {car.imageUrls.length > 1 && (
+                        <>
+                          <CarouselPrevious className="left-2 right-auto" />
+                          <CarouselNext className="right-2 left-auto" />
+                        </>
+                      )}
+                    </Carousel>
+
+                    {/* Thumbnail Navigation */}
+                    {car.imageUrls.length > 1 && (
+                      <div className="px-4 pb-4">
+                        <div className="flex gap-2 overflow-x-auto">
+                          {car.imageUrls.map((url, index) => (
+                            <button
+                              key={index}
+                              onClick={() => api?.scrollTo(index)}
+                              className={`flex-shrink-0 aspect-[4/3] w-16 rounded-md overflow-hidden border-2 transition-all ${
+                                current === index ? 'border-blue-600 ring-2 ring-blue-400' : 'border-gray-300 hover:border-gray-400'
+                              }`}
+                            >
+                              <img src={url} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                        <div className="mt-2 text-center text-sm text-gray-600">
+                          {current + 1} / {count}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                    <div className="text-gray-400">No Image Available</div>
                   </div>
                 )}
               </CardContent>
@@ -204,6 +226,98 @@ export default function CarDetail() {
                 <p className="text-gray-700 whitespace-pre-line">{car.description}</p>
               </CardContent>
             </Card>
+
+            {/* Vehicle Specifications */}
+            <Card className="mt-6">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Vehicle Specifications</h2>
+                <div className="space-y-4">
+                  {car.bodyType && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-gray-600">Body Type</span>
+                      <Badge variant="secondary">{car.bodyType}</Badge>
+                    </div>
+                  )}
+                  {car.color && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div className="flex items-center text-gray-600 gap-2">
+                        <Palette className="w-4 h-4" />
+                        <span>Color</span>
+                      </div>
+                      <Badge variant="secondary">{car.color}</Badge>
+                    </div>
+                  )}
+                  {car.engineCapacity && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-gray-600">Engine Capacity</span>
+                      <Badge variant="secondary">{car.engineCapacity} cc</Badge>
+                    </div>
+                  )}
+                  {car.powerOutput && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div className="flex items-center text-gray-600 gap-2">
+                        <Zap className="w-4 h-4" />
+                        <span>Power Output</span>
+                      </div>
+                      <Badge variant="secondary">{car.powerOutput} bhp</Badge>
+                    </div>
+                  )}
+                  {car.torque && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-gray-600">Torque</span>
+                      <Badge variant="secondary">{car.torque} Nm</Badge>
+                    </div>
+                  )}
+                  {car.seatingCapacity && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div className="flex items-center text-gray-600 gap-2">
+                        <Users className="w-4 h-4" />
+                        <span>Seating Capacity</span>
+                      </div>
+                      <Badge variant="secondary">{car.seatingCapacity} Seats</Badge>
+                    </div>
+                  )}
+                  {car.fuelConsumption && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-gray-600">Fuel Consumption</span>
+                      <Badge variant="secondary">{car.fuelConsumption} km/l</Badge>
+                    </div>
+                  )}
+                  {car.ownerCount && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <span className="text-gray-600">Owner</span>
+                      <Badge variant="secondary">{car.ownerCount === 1 ? '1st Owner' : car.ownerCount === 2 ? '2nd Owner' : car.ownerCount === 3 ? '3rd Owner' : '4+ Owners'}</Badge>
+                    </div>
+                  )}
+                  {car.registrationState && (
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div className="flex items-center text-gray-600 gap-2">
+                        <FileText className="w-4 h-4" />
+                        <span>Registration State</span>
+                      </div>
+                      <Badge variant="secondary">{car.registrationState}</Badge>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Features & Amenities */}
+            {car.features && car.features.length > 0 && (
+              <Card className="mt-6">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Features & Amenities</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {car.features.map((feature) => (
+                      <div key={feature} className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+                        <span className="text-blue-600">✓</span>
+                        <span className="text-sm text-gray-700">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Details Section */}
@@ -231,9 +345,9 @@ export default function CarDetail() {
                   <div className="flex items-center justify-between py-3 border-b">
                     <div className="flex items-center text-gray-600">
                       <Gauge className="w-5 h-5 mr-2" />
-                      <span>Mileage</span>
+                      <span>KM Driven</span>
                     </div>
-                    <Badge variant="secondary">{car.mileage.toLocaleString()} km</Badge>
+                    <Badge variant="secondary">{(car.kmDriven ?? 0).toLocaleString()} km</Badge>
                   </div>
 
                   <div className="flex items-center justify-between py-3 border-b">
@@ -262,7 +376,7 @@ export default function CarDetail() {
 
                 {isAdmin && (
                   <div className="mt-4 space-y-2">
-                    <Link to={`/dashboard/edit/${car?.id}`}>
+                    <Link to={`/add-vehicle/edit/${car?.id}`}>
                       <Button className="w-full" variant="outline">
                         <PencilIcon className="w-4 h-4 mr-2" />
                         Edit Listing

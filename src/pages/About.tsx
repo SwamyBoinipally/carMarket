@@ -1,34 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { 
-  ArrowLeft, Building2, Mail, Phone, Clock, MapPin, 
+  Building2, Mail, Phone, Clock, MapPin, 
   Car, Wrench, FileCheck, BadgeDollarSign, History, Truck,
   Facebook, Instagram, Twitter, Youtube, CheckCircle2, Globe2
 } from "lucide-react";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.svg" alt="CarMarket Logo" className="w-10 h-10" />
-              <span className="text-2xl font-bold text-blue-600">CarMarket</span>
-            </Link>
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="bg-white shadow-lg border-0">

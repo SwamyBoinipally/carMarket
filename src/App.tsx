@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Home from './pages/Home';
 import CarDetail from './pages/CarDetail';
-import Dashboard from './pages/Dashboard';
+import AddVehicle from './pages/AddVehicle';
 import NotFound from './pages/NotFound';
 import About from './pages/About';
 
@@ -21,8 +21,8 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/car/:id" element={<CarDetail />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/edit/:id" element={<Dashboard />} />
+            <Route path="/add-vehicle" element={<AddVehicle />} />
+            <Route path="/add-vehicle/edit/:id" element={<AddVehicle />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useAuth } from '@/contexts/AuthContext';
-import { Search, LogIn, LogOut, LayoutDashboard, Phone, Menu, Building2 } from 'lucide-react';
+import { Search, Phone } from 'lucide-react';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 
 export default function Home() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -20,8 +19,6 @@ export default function Home() {
   const [yearFilter, setYearFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const { user, signInWithGoogle, logout } = useAuth();
 
   useEffect(() => {
     fetchCars();
@@ -30,11 +27,6 @@ export default function Home() {
   useEffect(() => {
     filterAndSortCars();
   }, [cars, searchTerm, priceFilter, yearFilter, sortBy]);
-
-  // Close sheet when auth state changes
-  useEffect(() => {
-    setSheetOpen(false);
-  }, [user]);
 
   const fetchCars = async () => {
     try {
@@ -47,7 +39,7 @@ export default function Home() {
       })) as Car[];
       setCars(carsData);
     } catch (error) {
-      console.error('Error fetching cars:', error);
+      // Silently handle fetch errors
     } finally {
       setLoading(false);
     }
@@ -96,7 +88,7 @@ export default function Home() {
     } else if (sortBy === 'year-old') {
       filtered.sort((a, b) => a.year - b.year);
     } else if (sortBy === 'mileage-low') {
-      filtered.sort((a, b) => a.mileage - b.mileage);
+      filtered.sort((a, b) => a.kmDriven - b.kmDriven);
     }
 
     setFilteredCars(filtered);
@@ -115,113 +107,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.svg" alt="CarMarket Logo" className="w-10 h-10" />
-              <span className="text-2xl font-bold text-blue-600">CarMarket</span>
-            </Link>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex gap-2">
-              <Link to="/about">
-                <Button variant="outline" size="sm">
-                  <Building2 className="w-4 h-4 mr-2" />
-                  About
-                </Button>
-              </Link>
-              <Button onClick={handleWhatsAppClick} variant="outline" size="sm" className="!bg-transparent !hover:bg-transparent border-green-600 text-green-600 hover:bg-green-50">
-                <Phone className="w-4 h-4 mr-2" />
-                WhatsApp
-              </Button>
-              {user && (
-                <Link to="/dashboard">
-                  <Button variant="outline" size="sm">
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
-              )}
-              {user ? (
-                <Button onClick={logout} variant="outline" size="sm">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
-              ) : (
-                <Button onClick={signInWithGoogle} size="sm">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
-                </Button>
-              )}
-            </div>
-
-            {/* Mobile Navigation */}
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px]" onCloseAutoFocus={(e) => e.preventDefault()}>
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-4 mt-6">
-                  <Link to="/about" className="w-full" onClick={() => setSheetOpen(false)}>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Building2 className="w-4 h-4 mr-2" />
-                      About
-                    </Button>
-                  </Link>
-                  <Button onClick={() => { handleWhatsAppClick(); setSheetOpen(false); }} variant="outline" className="w-full justify-start">
-                    <Phone className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </Button>
-                  {user && (
-                    <Link to="/dashboard" className="w-full" onClick={() => setSheetOpen(false)}>
-                      <Button variant="outline" className="w-full justify-start">
-                        <LayoutDashboard className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Button>
-                    </Link>
-                  )}
-                  {user ? (
-                    <Button 
-                      onClick={async () => {
-                        setSheetOpen(false);
-                        await logout();
-                      }} 
-                      variant="outline" 
-                      className="w-full justify-start"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={async () => {
-                        setSheetOpen(false);
-                        await signInWithGoogle();
-                      }} 
-                      className="w-full justify-start"
-                    >
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In
-                    </Button>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-4">Find Your Perfect Car</h1>
+          <h1 className="text-4xl font-bold mb-4">Find Your Perfect Vehicle</h1>
           <p className="text-lg opacity-90">Browse our collection of quality second-hand vehicles</p>
         </div>
       </div>
@@ -301,9 +192,9 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCars.map((car) => (
                 <Link key={car.id} to={`/car/${car.id}`}>
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                    <CardHeader className="p-0">
-                      <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
+                    <CardHeader className="p-0 flex-grow">
+                      <div className="aspect-[4/3] bg-gray-200 rounded-t-lg overflow-hidden">
                         {car.imageUrls && car.imageUrls.length > 0 ? (
                           <img
                             src={car.imageUrls[0]}
@@ -318,17 +209,20 @@ export default function Home() {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4">
-                      <CardTitle className="text-xl mb-2">{car.title}</CardTitle>
+                      <CardTitle className="text-xl mb-2 line-clamp-2">{car.title}</CardTitle>
                       <p className="text-2xl font-bold text-blue-600 mb-2">
                         {formatPrice(car.price)}
                       </p>
                       <div className="space-y-1 text-sm text-gray-600">
-                        <p>{car.year} • {car.mileage.toLocaleString()} km</p>
+                        <p>{car.year} • {(car.kmDriven ?? 0).toLocaleString()} km</p>
                         <p>{car.fuelType} • {car.transmission}</p>
-                        <p className="text-gray-500">{car.location}</p>
+                        {car.bodyType && car.color && (
+                          <p className="text-gray-500">{car.bodyType} • {car.color}</p>
+                        )}
+                        <p className="text-gray-500 line-clamp-1">{car.location}</p>
                       </div>
                     </CardContent>
-                    <CardFooter className="p-4 pt-0">
+                    <CardFooter className="p-4 pt-0 mt-auto">
                       <Button className="w-full" variant="outline">
                         View Details
                       </Button>
